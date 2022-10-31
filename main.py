@@ -1,84 +1,61 @@
-# WS 320x240 display example
-from machine import Pin,SPI,PWM
-import framebuf
+# main.py -- put your code here!
+import _thread
 import time
-import os
 
-from lcd_display import LCD_1inch3, BL
+from machine import PWM, Pin
+from micropython import const
 
+from lcd_driver import LCD_Display
+from wavePlayer import wavePlayer
+
+
+def show_starfleet_logo(lcd):
+
+    with open('./media/sfl.raw', 'rb') as fp:
+        buff = fp.read()
+    lcd.blit_buffer(buff, 100, 5, 143, 230)
 
 if __name__=='__main__':
-    pwm = PWM(Pin(BL))
+    # Start display thread
+    #_thread.start_new_thread(display_thread, ())
+
+    #sound_pin = Pin(5, Pin.OUT, Pin.PULL_DOWN)
+    #sound_pin.high()
+    #player = wavePlayer(Pin(0))
+
+    # try:
+    #     while True:
+    #         player.play('./tos_tricorder_scan.wav')
+    
+    # except KeyboardInterrupt:
+    #     player.stop()
+    #     sound_pin.low()
+
+    pwm = PWM(Pin(16))
     pwm.freq(1000)
     pwm.duty_u16(32768)#max 65535
 
-    LCD = LCD_1inch3()
-    #color BRG
-    LCD.fill(LCD.WHITE)
-    LCD.show()
+
+    LCD = LCD_Display(width=320, height=240, 
+        bl_id=16, dc_id=17, rst_id=20, mosi_id=11, sck_id=10, cs_id=21,
+        rotation=3, fill_color=const(0x00d1))
+
+    start = time.ticks_ms()
+    show_starfleet_logo(LCD)
+       
+    # LCD.fill_rect(0, 100, 100, 100, BLUE)
+    # LCD.fill_rect(100, 50, 100, 100, MAGENTA)
+    # LCD.fill_rect(200, 0, 120, 240, UW_PURPLE)
     
-    cnt = 0
-    while(1):
-        cnt += 1
-        LCD.fill_rect(0,0,320,24,LCD.RED)
-        LCD.rect(0,0,320,24,LCD.RED)
-        LCD.text(f"Raspberry Pi Pico {cnt}",2,8,LCD.WHITE)
-        #time.sleep(0.1)
-        LCD.fill_rect(0,24,320,24,LCD.BLUE)
-        LCD.rect(0,24,320,24,LCD.BLUE)
-        LCD.text("PicoGo",2,32,LCD.WHITE)
-        #time.sleep(0.1)
-        LCD.fill_rect(0,48,320,24,LCD.GREEN)
-        LCD.rect(0,48,320,24,LCD.GREEN)
-        LCD.text("Pico-LCD-2",2,54,LCD.WHITE)
-        #time.sleep(0.1)
-        LCD.fill_rect(0,72,320,24,0X07FF)
-        LCD.rect(0,72,320,24,0X07FF)
-        #time.sleep(0.1)
-        LCD.fill_rect(0,96,320,24,0xF81F)
-        LCD.rect(0,96,320,24,0xF81F)
-        #time.sleep(0.1)
-        LCD.fill_rect(0,120,320,24,0x7FFF)
-        LCD.rect(0,120,320,24,0x7FFF)
-        #time.sleep(0.1)
-        LCD.fill_rect(0,144,320,24,0xFFE0)
-        LCD.rect(0,144,320,24,0xFFE0)
-        #time.sleep(0.1)
-        LCD.fill_rect(0,168,320,24,0XBC40)
-        LCD.rect(0,168,320,24,0XBC40)
-        #time.sleep(0.1)
-        LCD.fill_rect(0,192,320,24,0XFC07)
-        LCD.rect(0,192,320,24,0XFC07)
-        #time.sleep(0.1)
-        LCD.fill_rect(0,216,320,24,0X8430)
-        LCD.rect(0,216,320,24,0X8430)
-        #time.sleep(0.1)
-        #time.sleep(0.1)
-        LCD.show()
-    #time.sleep(1)
-    LCD.fill(0xFFFF)
-
-'''
-LCD.rect(0,0,160,128,colour(0,0,255)) # Blue Frame
-LCD.text("WaveShare", 44,10,colour(255,0,0))
-LCD.text('Pico Display 1.8"', 10,24,colour(255,255,0))
-LCD.text("160x128 SPI", 38,37,colour(0,255,0))
-LCD.text("Tony Goodhew", 30,48,colour(100,100,100))
-c = colour(255,240,0)
-printstring("New Font - Size 1",14,65,1,0,0,c)
-c = colour(255,0,255)
-printstring("Now size 2",12,78,2,0,0,c)
-c = colour(0,255,255)
-printstring("Size 3",30,100,3,0,0,c)
-
-LCD.pixel(0,0,0xFFFF)     # Left Top - OK
-LCD.pixel(0,239,0xFFFF)   # Left Bottom - OK
-LCD.pixel(319,0,0xFFFF)   # Right Top - OK
-LCD.pixel(319,239,0xFFFF) # Right Bottom - OK
-LCD.show()
-utime.sleep(20)
-'''
-
-
-
+    # old_x = 100
+    # old_y = 50
+    
+    # for i in range(0, 100):
+    #     LCD.fill_rect(old_x, old_y, 100, 100, WHITE)
+    #     old_x += 1
+    #     old_y += 1
+    #     LCD.fill_rect(old_x, old_y, 100, 100, MAGENTA)
+    #     time.sleep_ms(250)
+    end = time.ticks_ms()
+    print(f'Time: {end - start}, {start}, {end}')
 
