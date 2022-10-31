@@ -443,12 +443,6 @@ def _encode_pos(x, y):
     """Encode a postion into bytes."""
     return struct.pack(_ENCODE_POS, x, y)
 
-def show_starfleet_logo(lcd):
-
-    with open('./media/sfl.raw', 'rb') as fp:
-        buff = fp.read()
-    lcd.blit_buffer(buff, 100, 5, 143, 230)
-
 if __name__=='__main__':
     pwm = PWM(Pin(16))
     pwm.freq(1000)
@@ -460,43 +454,11 @@ if __name__=='__main__':
         rotation=3, fill_color=const(0x00d1))
 
     start = time.ticks_ms()
-    show_starfleet_logo(LCD)
        
-    # LCD.fill_rect(0, 100, 100, 100, BLUE)
-    # LCD.fill_rect(100, 50, 100, 100, MAGENTA)
-    # LCD.fill_rect(200, 0, 120, 240, UW_PURPLE)
+    LCD.fill_rect(0, 100, 100, 100, BLUE)
+    LCD.fill_rect(100, 50, 100, 100, MAGENTA)
+    LCD.fill_rect(200, 0, 120, 240, UW_PURPLE)
     
-    # old_x = 100
-    # old_y = 50
-    
-    # for i in range(0, 100):
-    #     LCD.fill_rect(old_x, old_y, 100, 100, WHITE)
-    #     old_x += 1
-    #     old_y += 1
-    #     LCD.fill_rect(old_x, old_y, 100, 100, MAGENTA)
-    #     time.sleep_ms(250)
     end = time.ticks_ms()
     print(f'Time: {end - start}, {start}, {end}')
             
-
-
-'''
-LCD.rect(0,0,160,128,colour(0,0,255)) # Blue Frame
-LCD.text("WaveShare", 44,10,colour(255,0,0))
-LCD.text('Pico Display 1.8"', 10,24,colour(255,255,0))
-LCD.text("160x128 SPI", 38,37,colour(0,255,0))
-LCD.text("Tony Goodhew", 30,48,colour(100,100,100))
-c = colour(255,240,0)
-printstring("New Font - Size 1",14,65,1,0,0,c)
-c = colour(255,0,255)
-printstring("Now size 2",12,78,2,0,0,c)
-c = colour(0,255,255)
-printstring("Size 3",30,100,3,0,0,c)
-
-LCD.pixel(0,0,0xFFFF)     # Left Top - OK
-LCD.pixel(0,239,0xFFFF)   # Left Bottom - OK
-LCD.pixel(319,0,0xFFFF)   # Right Top - OK
-LCD.pixel(319,239,0xFFFF) # Right Bottom - OK
-LCD.show()
-utime.sleep(20)
-'''
