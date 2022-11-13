@@ -14,11 +14,13 @@ def error(msg):
     
 def write_bin(f, pixel_list):
     for pix in pixel_list:
+        print(f'pix: {pix}')
         r = (pix[0] >> 3) & 0x1F
         g = (pix[1] >> 2) & 0x3F
         b = (pix[2] >> 3) & 0x1F
         v = struct.pack('H', (b << 11) + (g << 5) + r)
         #print(''.join(r'\x'+hex(letter)[2:] for letter in v))
+        print(f'{v}\n')
         f.write(v)
 
 ##

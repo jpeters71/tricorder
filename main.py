@@ -1,11 +1,13 @@
 # main.py -- put your code here!
 import _thread
 import time
+import gc
 
-from machine import PWM, Pin
+from machine import PWM, Pin, SoftSPI
 from micropython import const
 
 from lcd_driver import LCD_Display
+from oled_driver import SSD1351
 from wavePlayer import wavePlayer
 
 
@@ -35,27 +37,26 @@ if __name__=='__main__':
     pwm.freq(1000)
     pwm.duty_u16(32768)#max 65535
 
+    height = 128 # 1.5 inch 128*128 display
 
-    LCD = LCD_Display(width=320, height=240, 
-        bl_id=16, dc_id=17, rst_id=20, mosi_id=11, sck_id=10, cs_id=21,
-        rotation=3, fill_color=const(0x00d1))
+    
+
+    pdc = Pin(3, Pin.OUT, value=0)
+    pcs = Pin(2, Pin.OUT, value=1)
+    prst = Pin(4, Pin.OUT, value=1)
+    #spi = machine.SPI(1, baudrate=1_000_000)
+    spi = SoftSPI(sck=Pin(1, Pin.OUT), mosi=Pin(5, Pin.OUT), miso=Pin(0, Pin.OUT))
+    gc.collect()  # Precaution before instantiating framebuf
+    ssd = SSD1351(spi, pcs, pdc, prst, height)  # Create a display instance
+    ssd.show()
+
+    # LCD = LCD_Display(width=320, height=240, 
+    #     bl_id=16, dc_id=17, rst_id=20, mosi_id=11, sck_id=10, cs_id=21,
+    #     rotation=3, fill_color=const(0x00d1))
 
     start = time.ticks_ms()
-    show_starfleet_logo(LCD)
-       
-    # LCD.fill_rect(0, 100, 100, 100, BLUE)
-    # LCD.fill_rect(100, 50, 100, 100, MAGENTA)
-    # LCD.fill_rect(200, 0, 120, 240, UW_PURPLE)
-    
-    # old_x = 100
-    # old_y = 50
-    
-    # for i in range(0, 100):
-    #     LCD.fill_rect(old_x, old_y, 100, 100, WHITE)
-    #     old_x += 1
-    #     old_y += 1
-    #     LCD.fill_rect(old_x, old_y, 100, 100, MAGENTA)
-    #     time.sleep_ms(250)
+    # show_starfleet_logo(LCD)
+    ssd.fill_rect(20, 20, 70, 70, SSD1351.rgb(0, 0, 255))   
     end = time.ticks_ms()
     print(f'Time: {end - start}, {start}, {end}')
 
