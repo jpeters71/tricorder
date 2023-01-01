@@ -1,62 +1,60 @@
-# main.py -- put your code here!
 import _thread
-import time
 import gc
 
-from machine import PWM, Pin, SoftSPI
-from micropython import const
+from utime import sleep
 
-from lcd_driver import LCD_Display
-from oled_driver import SSD1351
-from wavePlayer import wavePlayer
+from lib.actions.medical_scan import MedicalScanAction
+from lib.actions.starfleet import StarfleetAction
+from lib.actions.surface_scan import SurfaceScanAction
+from lib.audio import Audio
+from lib.control_panel import ControlPanel
+from lib.displays import Displays
+from lib.utils import log
 
 
-def show_starfleet_logo(lcd):
+def event_loop(disps: Displays, audio: Audio, ctrl_panel: ControlPanel):
+    # Start by creating actions
+    starfleet_act = StarfleetAction(disps, audio, ctrl_panel)
+    med_disp_act = MedicalScanAction(disps, audio, ctrl_panel)
+    surface_scan_act = SurfaceScanAction(disps, audio, ctrl_panel)
+    current_act = starfleet_act
 
-    with open('./media/sfl.raw', 'rb') as fp:
-        buff = fp.read()
-    lcd.blit_buffer(buff, 100, 5, 143, 230)
+    try:
+        current_act.start()
+        while True:
+            log(f'GC: {gc.mem_free()}')    
+            btns = ctrl_panel.read_buttons()
+
+            if btns[ControlPanel.SW1] or btns[ControlPanel.SW2] or btns[ControlPanel.SW3]:
+                log(f'GC PRE: {gc.mem_free()} - {btns} - {btns[ControlPanel.SW1] and btns[ControlPanel.SW3]}')    
+                current_act.stop()
+                gc.collect()
+                if btns[ControlPanel.SW1] and btns[ControlPanel.SW3]:
+                    current_act = starfleet_act
+                elif btns[ControlPanel.SW1]:
+                    current_act = med_disp_act
+                elif btns[ControlPanel.SW2]:
+                    current_act = surface_scan_act
+
+                log(f'GC POST: {gc.mem_free()}')    
+                current_act.start()
+            
+            current_act.step()
+            sleep(current_act.step_delay)
+                            
+    except KeyboardInterrupt:
+        if current_act:
+            current_act.stop()
+
+
+def main():
+    gc.enable()
+    ctrl_panel = ControlPanel()
+    disps = Displays()
+    audio = Audio()
+    gc.collect()    
+    event_loop(disps, audio, ctrl_panel)
 
 if __name__=='__main__':
-    # Start display thread
-    #_thread.start_new_thread(display_thread, ())
-
-    #sound_pin = Pin(5, Pin.OUT, Pin.PULL_DOWN)
-    #sound_pin.high()
-    #player = wavePlayer(Pin(0))
-
-    # try:
-    #     while True:
-    #         player.play('./tos_tricorder_scan.wav')
-    
-    # except KeyboardInterrupt:
-    #     player.stop()
-    #     sound_pin.low()
-
-    pwm = PWM(Pin(16))
-    pwm.freq(1000)
-    pwm.duty_u16(32768)#max 65535
-
-    height = 128 # 1.5 inch 128*128 display
-
-    
-
-    pdc = Pin(3, Pin.OUT, value=0)
-    pcs = Pin(2, Pin.OUT, value=1)
-    prst = Pin(4, Pin.OUT, value=1)
-    #spi = machine.SPI(1, baudrate=1_000_000)
-    spi = SoftSPI(sck=Pin(1, Pin.OUT), mosi=Pin(5, Pin.OUT), miso=Pin(0, Pin.OUT))
-    gc.collect()  # Precaution before instantiating framebuf
-    ssd = SSD1351(spi, pcs, pdc, prst, height)  # Create a display instance
-    ssd.show()
-
-    # LCD = LCD_Display(width=320, height=240, 
-    #     bl_id=16, dc_id=17, rst_id=20, mosi_id=11, sck_id=10, cs_id=21,
-    #     rotation=3, fill_color=const(0x00d1))
-
-    start = time.ticks_ms()
-    # show_starfleet_logo(LCD)
-    ssd.fill_rect(20, 20, 70, 70, SSD1351.rgb(0, 0, 255))   
-    end = time.ticks_ms()
-    print(f'Time: {end - start}, {start}, {end}')
+    main()            
 
