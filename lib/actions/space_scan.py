@@ -9,84 +9,71 @@ from lib.control_panel import ControlPanel
 from lib.displays import Displays
 
 
-TRIANGLE = 0
-CIRCLE = 1
-BACKGROUND_CLR =0xFC00
-POLAR_GRID_CLR = 0x8FFF
-TRIANGLE_HEIGHTS = [9, 7, 5, 3, 0]
-RADAR_SWEEP_INC = 10
-RADAR_DIM = 240
-RADAR_MAX_RADIUS = int(RADAR_DIM / 20)
-RADAR_SIGNAL_RADIUS = 5
-SCAN_STEP_OFFSET = 4
+ANGLE_RISE_RUN = [
+    (1, 0), # 90
+    (15, 4), # 75
+    (12, 7), # 60
+    (3, 4), # 45
+    (26, 15), # 30
+    (15, 66), # 15
+    (0, 1) # 0
+]
 
+QUADRANT = [
+    (1, 1),
+    (-1, 1),
+    (-1, -1),
+    (1, -1)
+]
 
-class Signal():
-    def __init__(self, x: int, y: int, bounds, motion_mod: int, color: int, shape: int):
+class Star():
+    def __init__(self, x: int, y: int, rate: int, quadrant: int, angle: int, color: int):
         self.x = x
         self.y = y
-        self.type = type
-        self.motion_mod = motion_mod
+        self.rate = rate
+        self.quadrant = quadrant
+        self.angle = angle
         self.color = color
-        self.shape = shape
-        self.bounds = bounds
 
 
-class RadarSignal(Signal):
-    def __init__(self, x: int, y: int, bounds, motion_mod: int, bright_color: int, dim_color: int, shape: int):
-        super().__init__(x, y, bounds, motion_mod, bright_color, shape)
-        x0 = x - 120
-        y0 = y - 120
-        self.show_radius = int(math.sqrt(x0*x0 + y0*y0))
-        self.dim_color = dim_color
-        self.bright_color = self.color
-
-
-class SurfaceScanAction(Action):
-    LANDING_PARTY_BOUNDS = (45, 150, 111, 195)
-    LIFEFORM_BOUNDS = (130, 75, 212, 190)
-    ENERGY_SOURCE_BOUNDS = (35, 20, 160, 125)
-    INDETERMINATE_LIFEFORM_BOUNDS = (170, 20, 212, 75)
-
-    RADAR_BOUNDS= (30, 30, 180, 180)
-
+class SpaceScanAction(Action):
     def __init__(self, disps: Displays, audio: Audio, ctrl_panel: ControlPanel):
         super().__init__(disps, audio, ctrl_panel, step_delay = .25)
-        self.thread = None
-        self.scanner_signals = []
-        self.radar_signals = []
+        self.stars = []
         self.step_cnt = 0
-        self.current_sweep_radius = 1
 
     def start(self):
         gc.collect()
         # Start with the initial state
-        self._init_signals()
-        self.disps.top_disp.jpg('media/scan_display_320x240.jpg', 0, 0, Displays.TOP_DISP_JPG_SLOW)
-        self.disps.circ_disp.fill_rect(0, 0, 240, 240, Displays.BLACK)
-        
-        self._draw_grid()
-        self._draw_polar_grid()
+        self._init_stars()
+        self.disps.circ_disp.jpg('media/bluemarble.jpg', 0, 0, Displays.CIRC_DISP_JPG_SLOW)
         gc.collect()
         self.step_cnt = 0
         
-        #self.thread = _thread.start_new_thread(self.audio.play_wave_file, ('media/tos_tricorder_scan.wav',))
-
     def step(self):
-        self.step_cnt += 1
-        # Sensor screen update
-        if self.step_cnt % SCAN_STEP_OFFSET == 0:
-            self._draw_signals(True)
-            self._draw_grid()
-            self._draw_signals(False)
-        
-        # Radar screen
-        self._update_radar()
         gc.collect()
 
     def stop(self):
         pass
 
+
+    def _init_stars(self):
+        self.stars = []
+
+        self._add_stars(10)
+
+    def _add_stars(self, num_stars: int):
+        for _ in range(0, num_stars):
+            self.stars.append(Star(
+                x=160,
+                y=120,
+                rate=random.randint(1, 5),
+                quadrant=random.randint(0, 3),
+                angle=random.randint(0, 6),
+                color=random.choice([Displays.GREEN, Displays.RED, Displays.WHITE, Displays.YELLOW])
+            ))
+
+ b 
     def _draw_grid(self):
         # Draw grid
         horz_start_y = 47

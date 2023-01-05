@@ -65,6 +65,14 @@ class ControlPanel:
         self.io.debounceEnable(self.SW2_PIN)
         self.io.debounceEnable(self.SW3_PIN)
 
+    def leds_on(self, leds):
+        self.io.digitalWrite(self.LED1_PIN, LOW)
+        self.io.digitalWrite(self.LED2_PIN, LOW)
+        self.io.digitalWrite(self.LED3_PIN, LOW)
+
+        for led in leds:
+            self.io.digitalWrite(self.LEDS[led], HIGH)
+        
     def led_on(self, led_id: int):
         pin_id = self.LEDS[led_id]
         self.io.digitalWrite(pin_id, HIGH)

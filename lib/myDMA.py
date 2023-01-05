@@ -118,9 +118,4 @@ if __name__ == "__main__":
     dma.move(uctypes.addressof(src),uctypes.addressof(dst),tSize,start=True)
     end = time.ticks_us() 
 
-    print("src= ",src)
-    print("\ndst= ",dst)
-
     length_us = end - start
-    if length_us > 0:
-        print("\ntook {} us  rate = {} bytes /sec\n".format(length_us,1_000_000.0 * tSize / length_us))     

@@ -1,7 +1,7 @@
 import _thread
 import gc
 
-from utime import sleep
+from time import sleep
 
 from lib.actions.medical_scan import MedicalScanAction
 from lib.actions.starfleet import StarfleetAction
@@ -19,8 +19,9 @@ def event_loop(disps: Displays, audio: Audio, ctrl_panel: ControlPanel):
     surface_scan_act = SurfaceScanAction(disps, audio, ctrl_panel)
     current_act = starfleet_act
 
-    try:
+    try:    
         current_act.start()
+        ctrl_panel.leds_on([ControlPanel.LED1, ControlPanel.LED3])        
         while True:
             log(f'GC: {gc.mem_free()}')    
             btns = ctrl_panel.read_buttons()
@@ -29,15 +30,21 @@ def event_loop(disps: Displays, audio: Audio, ctrl_panel: ControlPanel):
                 log(f'GC PRE: {gc.mem_free()} - {btns} - {btns[ControlPanel.SW1] and btns[ControlPanel.SW3]}')    
                 current_act.stop()
                 gc.collect()
+                leds = None
                 if btns[ControlPanel.SW1] and btns[ControlPanel.SW3]:
                     current_act = starfleet_act
+                    leds = [ControlPanel.LED1, ControlPanel.LED3]
                 elif btns[ControlPanel.SW1]:
                     current_act = med_disp_act
+                    leds = [ControlPanel.LED1]
                 elif btns[ControlPanel.SW2]:
                     current_act = surface_scan_act
+                    leds = [ControlPanel.LED2]
 
                 log(f'GC POST: {gc.mem_free()}')    
                 current_act.start()
+                if leds:
+                    ctrl_panel.leds_on(leds)
             
             current_act.step()
             sleep(current_act.step_delay)

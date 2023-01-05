@@ -142,7 +142,7 @@ class SX1509:
     defs = SX1590def()
     
     def __init__(self, i2c, addr=0x3e):
-        print("sx1509 init")
+        #print("sx1509 init")
         self._i2c = i2c
         self._addr = addr
         self._buf1 = bytearray(2)
@@ -151,8 +151,8 @@ class SX1509:
 
 
         tstReg = self._readWord(self.defs.RegInterruptMaskA); # This should return 0xFF00
-        if(tstReg == 0xFF00):
-            print("SX1509__init success.")
+        #if(tstReg == 0xFF00):
+        #    print("SX1509__init success.")
 
 
     def _write(self, addr, val):

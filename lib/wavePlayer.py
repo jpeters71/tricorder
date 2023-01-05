@@ -297,7 +297,6 @@ if __name__ == "__main__":
 
     try:
         for  i in wavelist:
-            print(i)
             player.play(i)
     except KeyboardInterrupt:
         player.stop()
