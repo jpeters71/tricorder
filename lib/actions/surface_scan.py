@@ -154,7 +154,7 @@ class SurfaceScanAction(Action):
             self.scanner_signals.append(self._init_signal(self.INDETERMINATE_LIFEFORM_BOUNDS, Displays.YELLOW, TRIANGLE))            
 
         # Radar signals
-        for _ in range(2, random.randint(2, 6)):
+        for _ in range(2, random.randint(2, 10)):
             colors = (Displays.RED, 0x5800) if random.randint(0, 1) else (Displays.GREEN, 0x0220)
 
             self.radar_signals.append(

@@ -42,50 +42,61 @@ class ControlPanel:
         scan_tst = self.i2c.scan()
         log(f'SCAN TEST: {scan_tst}')
 
-        self.io = SX1509(i2c=self.i2c, addr=0x3E)
-        self.io.reset(hard=False)
-
+        try:
+            self.io = SX1509(i2c=self.i2c, addr=0x3E)
+            self.io.reset(hard=False)
+        except:
+            self.io = None
+            
         self._init_leds()
         self._init_buttons()
 
     def _init_leds(self):
-        self.io.pinMode(self.LED1_PIN, inOut=OUTPUT)
-        self.io.pinMode(self.LED2_PIN, inOut=OUTPUT)
-        self.io.pinMode(self.LED3_PIN, inOut=OUTPUT)
-        self.io.digitalWrite(self.LED1_PIN, LOW)
-        self.io.digitalWrite(self.LED2_PIN, LOW)
-        self.io.digitalWrite(self.LED3_PIN, LOW)
+        if self.io:
+            self.io.pinMode(self.LED1_PIN, inOut=OUTPUT)
+            self.io.pinMode(self.LED2_PIN, inOut=OUTPUT)
+            self.io.pinMode(self.LED3_PIN, inOut=OUTPUT)
+            self.io.digitalWrite(self.LED1_PIN, LOW)
+            self.io.digitalWrite(self.LED2_PIN, LOW)
+            self.io.digitalWrite(self.LED3_PIN, LOW)
 
     def _init_buttons(self):
-        self.io.pinMode(self.SW1_PIN, inOut=INPUT_PULLUP)
-        self.io.pinMode(self.SW2_PIN, inOut=INPUT_PULLUP)
-        self.io.pinMode(self.SW3_PIN, inOut=INPUT_PULLUP)
+        if self.io:
+            self.io.pinMode(self.SW1_PIN, inOut=INPUT_PULLUP)
+            self.io.pinMode(self.SW2_PIN, inOut=INPUT_PULLUP)
+            self.io.pinMode(self.SW3_PIN, inOut=INPUT_PULLUP)
 
-        self.io.debounceEnable(self.SW1_PIN)
-        self.io.debounceEnable(self.SW2_PIN)
-        self.io.debounceEnable(self.SW3_PIN)
+            self.io.debounceEnable(self.SW1_PIN)
+            self.io.debounceEnable(self.SW2_PIN)
+            self.io.debounceEnable(self.SW3_PIN)
 
     def leds_on(self, leds):
-        self.io.digitalWrite(self.LED1_PIN, LOW)
-        self.io.digitalWrite(self.LED2_PIN, LOW)
-        self.io.digitalWrite(self.LED3_PIN, LOW)
+        if self.io:
+            self.io.digitalWrite(self.LED1_PIN, LOW)
+            self.io.digitalWrite(self.LED2_PIN, LOW)
+            self.io.digitalWrite(self.LED3_PIN, LOW)
 
-        for led in leds:
-            self.io.digitalWrite(self.LEDS[led], HIGH)
+            for led in leds:
+                self.io.digitalWrite(self.LEDS[led], HIGH)
         
     def led_on(self, led_id: int):
-        pin_id = self.LEDS[led_id]
-        self.io.digitalWrite(pin_id, HIGH)
+        if self.io:
+            pin_id = self.LEDS[led_id]
+            self.io.digitalWrite(pin_id, HIGH)
 
     def led_off(self, led_id: int):
-        pin_id = self.LEDS[led_id]
-        self.io.digitalWrite(pin_id, LOW)
+        if self.io:
+            pin_id = self.LEDS[led_id]
+            self.io.digitalWrite(pin_id, LOW)
 
     def read_buttons(self):
-        btn_state = self.io.digitalReadAllPins()
+        if self.io:
+            btn_state = self.io.digitalReadAllPins()
 
-        return [
-            btn_state & (1<<self.SW1_PIN) == 0,
-            btn_state & (1<<self.SW2_PIN) == 0,
-            btn_state & (1<<self.SW3_PIN) == 0,
-        ]
+            return [
+                btn_state & (1<<self.SW1_PIN) == 0,
+                btn_state & (1<<self.SW2_PIN) == 0,
+                btn_state & (1<<self.SW3_PIN) == 0,
+            ]
+        else:
+            return [False, False, False]

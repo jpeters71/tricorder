@@ -2,8 +2,10 @@ import _thread
 import gc
 
 from time import sleep
+from lib.actions.logo_w import HuskyAction
 
 from lib.actions.medical_scan import MedicalScanAction
+from lib.actions.space_scan import SpaceScanAction
 from lib.actions.starfleet import StarfleetAction
 from lib.actions.surface_scan import SurfaceScanAction
 from lib.audio import Audio
@@ -17,6 +19,8 @@ def event_loop(disps: Displays, audio: Audio, ctrl_panel: ControlPanel):
     starfleet_act = StarfleetAction(disps, audio, ctrl_panel)
     med_disp_act = MedicalScanAction(disps, audio, ctrl_panel)
     surface_scan_act = SurfaceScanAction(disps, audio, ctrl_panel)
+    space_scan_act = SpaceScanAction(disps, audio, ctrl_panel)
+    husky_act = HuskyAction(disps, audio, ctrl_panel)
     current_act = starfleet_act
 
     try:    
@@ -31,7 +35,10 @@ def event_loop(disps: Displays, audio: Audio, ctrl_panel: ControlPanel):
                 current_act.stop()
                 gc.collect()
                 leds = None
-                if btns[ControlPanel.SW1] and btns[ControlPanel.SW3]:
+                if btns[ControlPanel.SW1] and btns[ControlPanel.SW2]:
+                    current_act = husky_act
+                    leds = [ControlPanel.LED1, ControlPanel.LED2]
+                elif btns[ControlPanel.SW1] and btns[ControlPanel.SW3]:
                     current_act = starfleet_act
                     leds = [ControlPanel.LED1, ControlPanel.LED3]
                 elif btns[ControlPanel.SW1]:
@@ -40,6 +47,9 @@ def event_loop(disps: Displays, audio: Audio, ctrl_panel: ControlPanel):
                 elif btns[ControlPanel.SW2]:
                     current_act = surface_scan_act
                     leds = [ControlPanel.LED2]
+                elif btns[ControlPanel.SW3]:
+                    current_act = space_scan_act
+                    leds = [ControlPanel.LED3]
 
                 log(f'GC POST: {gc.mem_free()}')    
                 current_act.start()
@@ -64,4 +74,3 @@ def main():
 
 if __name__=='__main__':
     main()            
-
