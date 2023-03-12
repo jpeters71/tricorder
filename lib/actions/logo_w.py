@@ -10,6 +10,8 @@ class HuskyAction(Action):
         super().__init__(disps, audio, ctrl_panel)
 
     def start(self):
+        # Start by turning off all LEDs
+        self.ctrl_panel.leds_on([])
         self.show_logo_ws()
     def step(self):
         pass
